@@ -1,0 +1,54 @@
+/* globals.scss (or globals.css if you don’t use SCSS) */
+$responsive: 800px;
+
+/* Reset margins, paddings, and box-sizing */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Ensure the page takes full height */
+html,
+body {
+  height: 100%;
+}
+
+/* Better text rendering defaults */
+html {
+  font-size: 16px; /* Base font size */
+  -webkit-text-size-adjust: 100%; /* Prevent font scaling in landscape */
+  scroll-behavior: smooth; /* Smooth scroll for anchor links */
+}
+
+/* Body defaults */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  background-color: #fff;
+  color: #000; /* or a neutral gray, e.g. #222 */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Make sure media is responsive by default */
+img,
+picture,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Remove default list styles */
+ul,
+ol {
+  list-style: none;
+}
