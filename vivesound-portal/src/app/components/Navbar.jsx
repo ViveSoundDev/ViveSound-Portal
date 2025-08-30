@@ -27,7 +27,7 @@ export default function SidebarLayout({ children }) {
   // Keep selection in sync with route
   const selectedKeys = useMemo(() => {
     if (pathname === "/" || pathname?.startsWith("/?")) return ["/"];
-    if (pathname?.startsWith("/account")) return ["/account"];
+    if (pathname?.startsWith("/my-account")) return ["/my-account"];
     return [];
   }, [pathname]);
 
@@ -38,9 +38,9 @@ export default function SidebarLayout({ children }) {
       label: <Link href="/">Dashboard</Link>,
     },
     {
-      key: "/account",
+      key: "/my-account",
       icon: <UserOutlined />,
-      label: <Link href="/account">My Account</Link>,
+      label: <Link href="/my-account">My Account</Link>,
     },
     { type: "divider" },
     { key: "logout", icon: <LogoutOutlined />, label: "Logout" },
