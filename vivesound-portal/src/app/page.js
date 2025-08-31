@@ -44,7 +44,7 @@ console.log("LOGIN: ", res)
       message.success("Logged in");
       router.push("/dashboard");
     } catch (err) {
-      message.error(err.message || "Invalid credentials");
+      message.error(err.errorMessage || "Invalid credentials");
     } finally {
       setLoading(false);
     }
