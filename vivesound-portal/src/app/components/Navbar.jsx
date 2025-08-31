@@ -26,7 +26,8 @@ export default function SidebarLayout({ children }) {
 
   // Keep selection in sync with route
   const selectedKeys = useMemo(() => {
-    if (pathname === "/dashboard" || pathname?.startsWith("/dashboard")) return ["/dashboard"];
+    if (pathname === "/dashboard" || pathname?.startsWith("/dashboard"))
+      return ["/dashboard"];
     if (pathname?.startsWith("/my-account")) return ["/my-account"];
     return [];
   }, [pathname]);
@@ -46,9 +47,11 @@ export default function SidebarLayout({ children }) {
     { key: "logout", icon: <LogoutOutlined />, label: "Logout" },
   ];
 
-  const onMenuClick = ({ key }) => {
+  const onMenuClick = async ({ key }) => {
     if (key === "logout") {
+      await fetch("/api/logout", { method: "POST" });
       router.push("/");
+
       return;
     }
     if (isMobile) setCollapsed(true); // auto-close sidebar after navigation on mobile

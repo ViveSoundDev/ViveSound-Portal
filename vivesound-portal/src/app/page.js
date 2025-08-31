@@ -8,7 +8,6 @@ import {
   Input,
   Button,
   Typography,
-  Divider,
   Space,
   theme,
   message,
@@ -16,9 +15,6 @@ import {
 import {
   MailOutlined,
   LockOutlined,
-  LoginOutlined,
-  GithubOutlined,
-  WindowsOutlined,
 } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -32,14 +28,18 @@ export default function LoginPage() {
   const onFinish = async ({ email, password }) => {
     setLoading(true);
     try {
-      // TODO: call your auth API
-      // const res = await fetch("/api/login", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ email, password }),
-      // });
-      // const json = await res.json();
-      // if (!res.ok) throw new Error(json.message || "Login failed");
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        credentials: "include", // let browser store the HttpOnly cookie
+      });
+
+      const data = await res.json();
+console.log("LOGIN: ", res)
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed");
+      }
 
       message.success("Logged in");
       router.push("/dashboard");
