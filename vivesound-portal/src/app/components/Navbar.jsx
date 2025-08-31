@@ -26,16 +26,16 @@ export default function SidebarLayout({ children }) {
 
   // Keep selection in sync with route
   const selectedKeys = useMemo(() => {
-    if (pathname === "/" || pathname?.startsWith("/?")) return ["/"];
+    if (pathname === "/dashboard" || pathname?.startsWith("/dashboard")) return ["/dashboard"];
     if (pathname?.startsWith("/my-account")) return ["/my-account"];
     return [];
   }, [pathname]);
 
   const items = [
     {
-      key: "/",
+      key: "/dashboard",
       icon: <DashboardOutlined />,
-      label: <Link href="/">Dashboard</Link>,
+      label: <Link href="/dashboard">Dashboard</Link>,
     },
     {
       key: "/my-account",
@@ -48,7 +48,7 @@ export default function SidebarLayout({ children }) {
 
   const onMenuClick = ({ key }) => {
     if (key === "logout") {
-      router.push("/login");
+      router.push("/");
       return;
     }
     if (isMobile) setCollapsed(true); // auto-close sidebar after navigation on mobile

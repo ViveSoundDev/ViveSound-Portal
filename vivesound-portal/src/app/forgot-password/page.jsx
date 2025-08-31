@@ -8,43 +8,34 @@ import {
   Input,
   Button,
   Typography,
-  Divider,
   Space,
   theme,
   message,
 } from "antd";
-import {
-  MailOutlined,
-  LockOutlined,
-  LoginOutlined,
-  GithubOutlined,
-  WindowsOutlined,
-} from "@ant-design/icons";
+import { MailOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
   const { token } = useToken();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = async ({ email, password }) => {
+  const onFinish = async ({ email }) => {
     setLoading(true);
     try {
-      // TODO: call your auth API
-      // const res = await fetch("/api/login", {
+      // TODO: call your reset password API here
+      // const res = await fetch("/api/reset-password", {
       //   method: "POST",
       //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ email, password }),
+      //   body: JSON.stringify({ email }),
       // });
-      // const json = await res.json();
-      // if (!res.ok) throw new Error(json.message || "Login failed");
 
-      message.success("Logged in");
-      router.push("/dashboard");
+      message.success("Password reset link sent to your email");
+      router.push("/login"); // after reset request, send back to login
     } catch (err) {
-      message.error(err.message || "Invalid credentials");
+      message.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -72,17 +63,18 @@ export default function LoginPage() {
       >
         <Space direction="vertical" size={12} style={{ width: "100%" }}>
           <Title level={3} style={{ margin: 0 }}>
-            Welcome back
+            Forgot Password
           </Title>
-          <Text type="secondary">Sign in to access your dashboard.</Text>
+          <Text type="secondary">
+            Enter your email twice to confirm your request.
+          </Text>
         </Space>
 
         <Form
-          name="login"
+          name="reset"
           layout="vertical"
           onFinish={onFinish}
           requiredMark={false}
-          autoComplete="on"
           style={{ marginTop: 20 }}
         >
           <Form.Item
@@ -103,15 +95,29 @@ export default function LoginPage() {
           </Form.Item>
 
           <Form.Item
-            label="Password"
-            name="password"
-            rules={[{ required: true, message: "Please enter your password" }]}
+            label="Confirm Email"
+            name="confirmEmail"
+            dependencies={["email"]}
+            rules={[
+              { required: true, message: "Please confirm your email" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("email") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("The two email addresses do not match")
+                  );
+                },
+              }),
+            ]}
           >
-            <Input.Password
+            <Input
               size="large"
-              prefix={<LockOutlined />}
-              placeholder="••••••••"
-              autoComplete="current-password"
+              prefix={<MailOutlined />}
+              placeholder="re-enter your email"
+              autoComplete="email"
+              allowClear
             />
           </Form.Item>
 
@@ -119,27 +125,24 @@ export default function LoginPage() {
             type="primary"
             htmlType="submit"
             size="large"
+            icon={<CheckCircleOutlined />}
             loading={loading}
             block
             style={{ borderRadius: 10 }}
           >
-            Sign in
+            Send Reset Link
           </Button>
         </Form>
 
         <div
           style={{
             marginTop: 16,
-            display: "flex",
-            justifyContent: "space-between",
+            textAlign: "center",
             fontSize: 12,
           }}
         >
           <Text type="secondary">
-            <a href="/forgot-password">Forgot password?</a>
-          </Text>
-          <Text type="secondary">
-            Don't have an account? <a href="/signup">Get Started</a>
+            <a href="/">Back to login</a>
           </Text>
         </div>
       </Card>

@@ -1,6 +1,5 @@
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "./styles/global.scss";
-import SidebarLayout from "./components/Navbar";
 
 export const metadata = {
   title: "Create Next App",
@@ -11,9 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <AntdRegistry>
-          <SidebarLayout>{children}</SidebarLayout>
-        </AntdRegistry>
+        <AntdRegistry>{children}</AntdRegistry>
       </body>
     </html>
   );

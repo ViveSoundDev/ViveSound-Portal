@@ -8,43 +8,30 @@ import {
   Input,
   Button,
   Typography,
-  Divider,
   Space,
   theme,
   message,
 } from "antd";
-import {
-  MailOutlined,
-  LockOutlined,
-  LoginOutlined,
-  GithubOutlined,
-  WindowsOutlined,
-} from "@ant-design/icons";
+import { LockOutlined, CheckCircleOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   const router = useRouter();
   const { token } = useToken();
   const [loading, setLoading] = useState(false);
 
-  const onFinish = async ({ email, password }) => {
+  const onFinish = async ({ password }) => {
     setLoading(true);
     try {
-      // TODO: call your auth API
-      // const res = await fetch("/api/login", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ email, password }),
-      // });
-      // const json = await res.json();
-      // if (!res.ok) throw new Error(json.message || "Login failed");
+      // TODO: call your backend reset endpoint here with the new password
+      // e.g. fetch("/api/reset-password", { method: "POST", body: JSON.stringify({ password, token: resetToken }) })
 
-      message.success("Logged in");
-      router.push("/dashboard");
+      message.success("Password updated successfully");
+      router.push("/login"); // redirect to login after reset
     } catch (err) {
-      message.error(err.message || "Invalid credentials");
+      message.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -72,46 +59,54 @@ export default function LoginPage() {
       >
         <Space direction="vertical" size={12} style={{ width: "100%" }}>
           <Title level={3} style={{ margin: 0 }}>
-            Welcome back
+            Create New Password
           </Title>
-          <Text type="secondary">Sign in to access your dashboard.</Text>
+          <Text type="secondary">
+            Please enter your new password twice to confirm.
+          </Text>
         </Space>
 
         <Form
-          name="login"
+          name="reset-password"
           layout="vertical"
           onFinish={onFinish}
           requiredMark={false}
-          autoComplete="on"
           style={{ marginTop: 20 }}
         >
           <Form.Item
-            label="Email"
-            name="email"
-            rules={[
-              { required: true, message: "Please enter your email" },
-              { type: "email", message: "Enter a valid email" },
-            ]}
-          >
-            <Input
-              size="large"
-              prefix={<MailOutlined />}
-              placeholder="you@example.com"
-              autoComplete="email"
-              allowClear
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Password"
+            label="New Password"
             name="password"
-            rules={[{ required: true, message: "Please enter your password" }]}
+            rules={[{ required: true, message: "Please enter a new password" }]}
           >
             <Input.Password
               size="large"
               prefix={<LockOutlined />}
-              placeholder="••••••••"
-              autoComplete="current-password"
+              placeholder="Enter new password"
+              autoComplete="new-password"
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Confirm Password"
+            name="confirmPassword"
+            dependencies={["password"]}
+            rules={[
+              { required: true, message: "Please confirm your new password" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue("password") === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error("Passwords do not match"));
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              size="large"
+              prefix={<LockOutlined />}
+              placeholder="Re-enter new password"
+              autoComplete="new-password"
             />
           </Form.Item>
 
@@ -119,27 +114,24 @@ export default function LoginPage() {
             type="primary"
             htmlType="submit"
             size="large"
+            icon={<CheckCircleOutlined />}
             loading={loading}
             block
             style={{ borderRadius: 10 }}
           >
-            Sign in
+            Reset Password
           </Button>
         </Form>
 
         <div
           style={{
             marginTop: 16,
-            display: "flex",
-            justifyContent: "space-between",
+            textAlign: "center",
             fontSize: 12,
           }}
         >
           <Text type="secondary">
-            <a href="/forgot-password">Forgot password?</a>
-          </Text>
-          <Text type="secondary">
-            Don't have an account? <a href="/signup">Get Started</a>
+            <a href="/">Back to login</a>
           </Text>
         </div>
       </Card>
