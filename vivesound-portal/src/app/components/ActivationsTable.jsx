@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useCallback, useEffect } from "react";
 import {
   Table,
   Button,
@@ -21,33 +21,9 @@ import dayjs from "dayjs";
 const { useBreakpoint } = Grid;
 const { RangePicker } = DatePicker;
 
-export default function ActivationsTable() {
+export default function ActivationsTable({data, loadingData}) {
   const screens = useBreakpoint();
   const isMobile = !screens.sm;
-
-  // --- Demo data (replace with fetch to your backend) ---
-  const [data, setData] = useState([
-    {
-      id: "a_1",
-      os: "Windows",
-      osVersion: "11 Pro 23H2",
-      hostname: "WS-LAPTOP-001",
-      ip: "34.201.16.55",
-      region: "Virginia",
-      country: "US",
-      updatedAt: "2025-08-30",
-    },
-    {
-      id: "a_2",
-      os: "macOS",
-      osVersion: "14.5 (Sonoma)",
-      hostname: "MBP-DEV-JANE",
-      ip: "192.168.1.24",
-      region: "Île-de-France",
-      country: "FR",
-      updatedAt: "2025-08-31",
-    },
-  ]);
 
   // selection
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -370,7 +346,8 @@ export default function ActivationsTable() {
         style={{ width: "100%" }}
         tableLayout="auto"
         rowKey="id"
-        // rowSelection={rowSelection}
+        rowSelection={rowSelection}
+        loading={loadingData}
         columns={columns}
         dataSource={data}
         pagination={{ pageSize: 10, showSizeChanger: true }}

@@ -72,8 +72,8 @@ export default function UsersTable() {
         lastName: u.lastName,
         email: u.email,
         dateAdded: u.createdAt
-          ? dayjs(u.createdAt).format("YYYY-MM-DD")
-          : dayjs().format("YYYY-MM-DD"),
+          ? dayjs(u.createdAt).format("MM-DD-YYYY")
+          : dayjs().format("MM-DD-YYYY"),
       }));
 
       setData(normalized);

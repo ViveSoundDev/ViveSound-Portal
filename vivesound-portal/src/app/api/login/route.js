@@ -37,9 +37,6 @@ export async function POST(req) {
     }
   }
 
-  console.log("OUTER: ", outer);
-  console.log("PAYLOAD: ", payload);
-
   // If backend encodes errors in payload even with 200
   const errorMessage =
     payload?.errorMessage || payload?.message || payload?.error || null;

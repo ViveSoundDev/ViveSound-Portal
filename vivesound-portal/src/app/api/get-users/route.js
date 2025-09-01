@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 
 export async function POST() {
   // 1. Read the token from cookies
-  const token = cookies().get("auth_token")?.value;
-  const userEmail = cookies().get("user_email")?.value;
+  const token = await cookies().get("auth_token")?.value;
+  const userEmail = await cookies().get("user_email")?.value;
 
   if (!token) {
     return NextResponse.json(
@@ -35,7 +35,6 @@ export async function POST() {
         { status: upstream.status }
       );
     }
-    console.log("GET USERS: ", data);
     // 3. Return users to frontend
     return NextResponse.json(data.body, { status: 200 });
   } catch (err) {

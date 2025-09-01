@@ -12,10 +12,7 @@ import {
   theme,
   message,
 } from "antd";
-import {
-  MailOutlined,
-  LockOutlined,
-} from "@ant-design/icons";
+import { MailOutlined, LockOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { useToken } = theme;
@@ -36,7 +33,6 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
-console.log("LOGIN: ", res)
       if (!res.ok) {
         throw new Error(data.message || "Login failed");
       }
