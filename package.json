@@ -9,13 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ant-design/compatible": "^5.1.4",
     "@ant-design/cssinjs": "^1.24.0",
     "@ant-design/icons": "^6.0.0",
     "@ant-design/nextjs-registry": "^1.1.0",
     "antd": "^5.27.1",
     "next": "15.5.2",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "sass": "^1.91.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

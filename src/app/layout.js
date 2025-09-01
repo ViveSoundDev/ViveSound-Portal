@@ -1,7 +1,6 @@
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import "./styles/global.scss";
 import "antd/dist/reset.css"; // core styles
-import "@ant-design/compatible"; // react-19 shim
 
 export const metadata = {
   title: "Create Next App",
