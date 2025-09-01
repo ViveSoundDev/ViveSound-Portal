@@ -162,15 +162,39 @@ export default function UsersTable() {
     if (selectedRowKeys.length === 0) return;
     setDeleting(true);
     try {
-      // OPTIONAL: call your delete route if you have one
-      // const res = await fetch("/api/delete-users", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ ids: selectedRowKeys }),
-      // });
-      // if (!res.ok) throw new Error((await res.json())?.message || "Delete failed");
-
-      message.success("Selected people deleted.");
+      let ok = 0,
+        fail = 0;
+      // rowKey="id" → selectedRowKeys already holds the "id" from your data list
+      const ids = selectedRowKeys.map((k) => String(k));
+      for (const userId of ids) {
+        try {
+          const res = await fetch("/api/delete-user", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ userId }), // send the "id" as userId
+          });
+          const text = await res.text();
+          let json = null;
+          try {
+            json = text ? JSON.parse(text) : null;
+          } catch {}
+          if (!res.ok) {
+            fail++;
+            console.error("delete-user failed:", json || text);
+          } else {
+            ok++;
+          }
+        } catch (err) {
+          fail++;
+          console.error("delete-user error:", err);
+        }
+      }
+      if (ok) message.success(`Deleted ${ok} user${ok > 1 ? "s" : ""}.`);
+      if (fail)
+        message.warning(
+          `${fail} delete${fail > 1 ? "s" : ""} failed. Check console.`
+        );
       setSelectedRowKeys([]);
       await fetchUsers();
     } catch (e) {
