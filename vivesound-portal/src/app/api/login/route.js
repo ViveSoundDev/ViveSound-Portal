@@ -37,8 +37,8 @@ export async function POST(req) {
     }
   }
 
-  console.log("OUTER: ", outer)
-  console.log("PAYLOAD: ", payload)
+  console.log("OUTER: ", outer);
+  console.log("PAYLOAD: ", payload);
 
   // If backend encodes errors in payload even with 200
   const errorMessage =
@@ -46,8 +46,9 @@ export async function POST(req) {
 
   // If your backend returns a token on success, set it; otherwise return error
   const token = payload?.accessToken || null;
+  const email = payload?.userEmail || null;
 
-  if (!upstream.ok || errorMessage || !token) {
+  if (!upstream.ok || errorMessage || !token || !email) {
     // Pick best message, fall back to generic
     const msg = errorMessage || "Login failed";
     return NextResponse.json({ message: msg }, { status: 401 });
@@ -56,6 +57,13 @@ export async function POST(req) {
   // Success: set HttpOnly cookie
   const res = NextResponse.json({ success: true });
   res.cookies.set("auth_token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60, // 1 hour
+  });
+  res.cookies.set("user_email", email, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",

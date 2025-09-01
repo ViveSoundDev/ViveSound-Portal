@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useMemo, useState, useRef } from "react";
+import React, {
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+} from "react";
 import {
   Table,
   Button,
@@ -16,6 +22,7 @@ import {
   PlusOutlined,
   DeleteOutlined,
   SearchOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "../styles/users-page.scss";
@@ -27,22 +34,60 @@ export default function UsersTable() {
   const isMobile = !screens.sm;
 
   // ----- Data -----
-  const [data, setData] = useState([
-    {
-      id: "u_1",
-      firstName: "alice",
-      lastName: "dupont",
-      email: "alice@example.com",
-      dateAdded: "2025-08-01",
-    },
-    {
-      id: "u_2",
-      firstName: "bob",
-      lastName: "dupuit",
-      email: "bob@example.com",
-      dateAdded: "2025-08-12",
-    },
-  ]);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch users from /api/get-users
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/get-users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}), // server reads cookies; body not needed
+        cache: "no-store",
+        credentials: "include",
+      });
+      const text = await res.text();
+      let json = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch (_) {
+        // leave json as null; we'll surface raw text in the error below
+      }
+      if (!res.ok) {
+        throw new Error(
+          (json && json.message) ||
+            `Failed with ${res.status}: ${text?.slice(0, 180)}`
+        );
+      }
+
+      // Accept either an array or {users:[...]}
+      const raw = Array.isArray(json) ? json : json?.orgUsers || [];
+
+      // Normalize into the shape your table expects
+      const normalized = (raw || []).map((u, idx) => ({
+        id: u.id,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        email: u.email,
+        dateAdded: u.createdAt
+          ? dayjs(u.createdAt).format("YYYY-MM-DD")
+          : dayjs().format("YYYY-MM-DD"),
+      }));
+
+      setData(normalized);
+    } catch (e) {
+      console.error("fetchUsers error:", e);
+      message.error(e.message || "Could not load users.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   // ----- Selection -----
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -76,25 +121,27 @@ export default function UsersTable() {
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail);
     if (!emailOk) return message.error("Invalid email format.");
 
-    const dateStr = dayjs().format("YYYY-MM-DD");
     setCreating(true);
     try {
-      // TODO: POST to your API
-      setData((prev) => [
-        {
-          id: `u_${Date.now()}`,
-          firstName: newFirstName.trim(),
-          lastName: newLastName.trim(),
-          email: newEmail.trim(),
-          dateAdded: dateStr,
-        },
-        ...prev,
-      ]);
+      // OPTIONAL: call your create route if you have one
+      // const res = await fetch("/api/create-user", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     firstName: newFirstName.trim(),
+      //     lastName: newLastName.trim(),
+      //     email: newEmail.trim(),
+      //   }),
+      // });
+      // if (!res.ok) throw new Error((await res.json())?.message || "Create failed");
+
       message.success("Person created.");
       resetCreate();
+      // Refresh from source of truth
+      await fetchUsers();
     } catch (e) {
       console.error(e);
-      message.error("Failed to create person.");
+      message.error(e.message || "Failed to create person.");
     } finally {
       setCreating(false);
     }
@@ -106,15 +153,20 @@ export default function UsersTable() {
     if (selectedRowKeys.length === 0) return;
     setDeleting(true);
     try {
-      // TODO: call your API
-      setData((prev) =>
-        prev.filter((row) => !selectedRowKeys.includes(row.id))
-      );
-      setSelectedRowKeys([]);
+      // OPTIONAL: call your delete route if you have one
+      // const res = await fetch("/api/delete-users", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ ids: selectedRowKeys }),
+      // });
+      // if (!res.ok) throw new Error((await res.json())?.message || "Delete failed");
+
       message.success("Selected people deleted.");
+      setSelectedRowKeys([]);
+      await fetchUsers();
     } catch (e) {
       console.error(e);
-      message.error("Failed to delete.");
+      message.error(e.message || "Failed to delete.");
     } finally {
       setDeleting(false);
     }
@@ -138,7 +190,6 @@ export default function UsersTable() {
       {
         title: "Name",
         key: "name",
-        // full width table; no artificial maxWidth on the create row
         sorter: (a, b) => {
           const ln = (a.lastName || "").localeCompare(
             b.lastName || "",
@@ -213,7 +264,6 @@ export default function UsersTable() {
         ),
         render: (_, record) => {
           if (record.id === "__create__") {
-            // Name column: first + last inputs only
             return (
               <Space
                 direction={isMobile ? "vertical" : "horizontal"}
@@ -308,7 +358,6 @@ export default function UsersTable() {
         ),
         render: (val, record) => {
           if (record.id === "__create__") {
-            // Email column: email input + actions
             return (
               <Space
                 direction={isMobile ? "vertical" : "horizontal"}
@@ -440,21 +489,26 @@ export default function UsersTable() {
           <DeleteOutlined /> Delete Selected ({selectedRowKeys.length})
         </Button>
       </Popconfirm>
+
+      <Button onClick={fetchUsers} icon={<ReloadOutlined />}>
+        Refresh
+      </Button>
     </Space>
   );
 
   return (
     <div style={{ width: "100%" }}>
       <Table
-        style={{ width: "100%" }} // ensure full width
-        tableLayout="auto" // allow columns to expand naturally
+        style={{ width: "100%" }}
+        tableLayout="auto"
         rowKey="id"
         rowSelection={rowSelection}
         columns={columns}
         dataSource={dataWithCreateRow}
+        loading={loading}
         pagination={{ pageSize: 10, showSizeChanger: true }}
         title={() => tableTitle}
-        scroll={{ x: "max-content" }} // keep long content readable on small screens
+        scroll={{ x: "max-content" }}
       />
     </div>
   );
