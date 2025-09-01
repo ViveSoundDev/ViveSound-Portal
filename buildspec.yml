@@ -14,7 +14,7 @@ phases:
 
   post_build:
     commands:
-      - aws s3 sync out/ s3://$S3_BUCKET --delete
+      - aws s3 sync out/ s3://$S3_BUCKET --delete --acl public-read
       - echo "Creating CloudFront invalidation..."
       - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DIST_ID --paths "/*"
 
