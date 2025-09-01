@@ -29,6 +29,7 @@ export default function SidebarLayout({ children }) {
     if (pathname === "/dashboard" || pathname?.startsWith("/dashboard"))
       return ["/dashboard"];
     if (pathname?.startsWith("/my-account")) return ["/my-account"];
+    if (pathname?.startsWith("/activations")) return ["/activations"];
     return [];
   }, [pathname]);
 
@@ -37,6 +38,11 @@ export default function SidebarLayout({ children }) {
       key: "/dashboard",
       icon: <DashboardOutlined />,
       label: <Link href="/dashboard">Dashboard</Link>,
+    },
+    {
+      key: "/activations",
+      icon: <DashboardOutlined />,
+      label: <Link href="/activations">Activations</Link>,
     },
     {
       key: "/my-account",

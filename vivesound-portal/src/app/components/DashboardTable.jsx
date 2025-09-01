@@ -25,10 +25,23 @@ const { RangePicker } = DatePicker;
 export default function DashboardTable() {
   const screens = useBreakpoint();
   const isMobile = !screens.sm;
+
   // ----- Data -----
   const [data, setData] = useState([
-    { id: "u_1", email: "alice@example.com", dateAdded: "2025-08-01" },
-    { id: "u_2", email: "bob@example.com", dateAdded: "2025-08-12" },
+    {
+      id: "u_1",
+      firstName: "alice",
+      lastName: "dupont",
+      email: "alice@example.com",
+      dateAdded: "2025-08-01",
+    },
+    {
+      id: "u_2",
+      firstName: "bob",
+      lastName: "dupuit",
+      email: "bob@example.com",
+      dateAdded: "2025-08-12",
+    },
   ]);
 
   // ----- Selection -----
@@ -44,25 +57,37 @@ export default function DashboardTable() {
 
   // ----- Create (toggled by button) -----
   const [showCreate, setShowCreate] = useState(false);
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [creating, setCreating] = useState(false);
 
   const resetCreate = () => {
+    setNewFirstName("");
+    setNewLastName("");
     setNewEmail("");
     setShowCreate(false);
   };
 
   const handleCreate = async () => {
-    if (!newEmail?.trim()) return message.warning("Please enter an email.");
+    if (!newFirstName.trim() || !newLastName.trim() || !newEmail.trim()) {
+      return message.warning("Please fill first name, last name, and email.");
+    }
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail);
     if (!emailOk) return message.error("Invalid email format.");
 
-    const dateStr = dayjs().format("YYYY-MM-DD"); // auto-set to today
+    const dateStr = dayjs().format("YYYY-MM-DD");
     setCreating(true);
     try {
       // TODO: POST to your API
       setData((prev) => [
-        { id: `u_${Date.now()}`, email: newEmail.trim(), dateAdded: dateStr },
+        {
+          id: `u_${Date.now()}`,
+          firstName: newFirstName.trim(),
+          lastName: newLastName.trim(),
+          email: newEmail.trim(),
+          dateAdded: dateStr,
+        },
         ...prev,
       ]);
       message.success("Person created.");
@@ -96,10 +121,13 @@ export default function DashboardTable() {
   };
 
   // ----- Filters state -----
+  const [nameSearch, setNameSearch] = useState("");
+  const nameInputRef = useRef(null);
+
   const [emailSearch, setEmailSearch] = useState("");
   const emailInputRef = useRef(null);
 
-  const [dateRange, setDateRange] = useState(null); // [dayjs, dayjs] | null
+  const [dateRange, setDateRange] = useState(null);
 
   // Helpers
   const normalizeDate = (val) => (val ? dayjs(val).format("YYYY-MM-DD") : "-");
@@ -108,10 +136,115 @@ export default function DashboardTable() {
   const columns = useMemo(
     () => [
       {
+        title: "Name",
+        key: "name",
+        // full width table; no artificial maxWidth on the create row
+        sorter: (a, b) => {
+          const ln = (a.lastName || "").localeCompare(
+            b.lastName || "",
+            undefined,
+            { sensitivity: "base" }
+          );
+          if (ln !== 0) return ln;
+          return (a.firstName || "").localeCompare(
+            b.firstName || "",
+            undefined,
+            { sensitivity: "base" }
+          );
+        },
+        sortDirections: ["ascend", "descend"],
+        filteredValue: nameSearch ? [nameSearch] : null,
+        onFilter: (value, record) => {
+          if (record.id === "__create__") return true;
+          const full = `${record.firstName || ""} ${
+            record.lastName || ""
+          }`.toLowerCase();
+          return full.includes(String(value).toLowerCase());
+        },
+        filterDropdown: ({
+          setSelectedKeys,
+          selectedKeys,
+          confirm,
+          clearFilters,
+          close,
+        }) => (
+          <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+            <Input
+              ref={nameInputRef}
+              placeholder="Search name"
+              value={selectedKeys[0]}
+              onChange={(e) =>
+                setSelectedKeys(e.target.value ? [e.target.value] : [])
+              }
+              onPressEnter={() => {
+                setNameSearch(selectedKeys[0] || "");
+                confirm();
+              }}
+              style={{ width: 220, marginBottom: 8, display: "block" }}
+            />
+            <Space>
+              <Button
+                type="primary"
+                icon={<SearchOutlined />}
+                onClick={() => {
+                  setNameSearch(selectedKeys[0] || "");
+                  confirm();
+                }}
+                size="small"
+              >
+                Search
+              </Button>
+              <Button
+                onClick={() => {
+                  clearFilters?.();
+                  setSelectedKeys([]);
+                  setNameSearch("");
+                  confirm();
+                }}
+                size="small"
+              >
+                Reset
+              </Button>
+              <Button type="link" size="small" onClick={() => close()}>
+                Close
+              </Button>
+            </Space>
+          </div>
+        ),
+        render: (_, record) => {
+          if (record.id === "__create__") {
+            // Name column: first + last inputs only
+            return (
+              <Space
+                direction={isMobile ? "vertical" : "horizontal"}
+                style={{ width: isMobile ? "100%" : "100%" }}
+                wrap
+              >
+                <Input
+                  placeholder="First name"
+                  value={newFirstName}
+                  onChange={(e) => setNewFirstName(e.target.value)}
+                  onPressEnter={handleCreate}
+                  style={{ width: isMobile ? "100%" : 200 }}
+                />
+                <Input
+                  placeholder="Last name"
+                  value={newLastName}
+                  onChange={(e) => setNewLastName(e.target.value)}
+                  onPressEnter={handleCreate}
+                  style={{ width: isMobile ? "100%" : 200 }}
+                />
+              </Space>
+            );
+          }
+          return `${record.firstName ?? ""} ${record.lastName ?? ""}`.trim();
+        },
+      },
+      {
         title: "Email",
         dataIndex: "email",
         key: "email",
-        ellipsis: true,
+        ellipsis: false,
         sorter: (a, b) =>
           (a.email || "").localeCompare(b.email || "", undefined, {
             sensitivity: "base",
@@ -119,7 +252,7 @@ export default function DashboardTable() {
         sortDirections: ["ascend", "descend"],
         filteredValue: emailSearch ? [emailSearch] : null,
         onFilter: (value, record) => {
-          if (record.id === "__create__") return true; // keep create row visible
+          if (record.id === "__create__") return true;
           const hay = (record.email || "").toLowerCase();
           return hay.includes(String(value).toLowerCase());
         },
@@ -173,23 +306,21 @@ export default function DashboardTable() {
             </Space>
           </div>
         ),
-        filterIcon: (filtered) => (
-          <SearchOutlined style={{ opacity: filtered ? 1 : 0.4 }} />
-        ),
         render: (val, record) => {
           if (record.id === "__create__") {
+            // Email column: email input + actions
             return (
               <Space
                 direction={isMobile ? "vertical" : "horizontal"}
-                style={{ width: isMobile ? "100%" : "auto", maxWidth: 520 }}
+                style={{ width: isMobile ? "100%" : "100%" }}
+                wrap
               >
                 <Input
-                  autoFocus
                   placeholder="user@domain.com"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   onPressEnter={handleCreate}
-                  style={{ width: isMobile ? "100%" : 340 }}
+                  style={{ width: isMobile ? "100%" : 260 }}
                 />
                 <Button
                   type="primary"
@@ -209,7 +340,7 @@ export default function DashboardTable() {
               </Space>
             );
           }
-          return val;
+          return <span style={{ whiteSpace: "nowrap" }}>{val}</span>;
         },
       },
       {
@@ -221,13 +352,12 @@ export default function DashboardTable() {
         sortDirections: ["descend", "ascend"],
         filteredValue: dateRange ? [dateRange] : null,
         onFilter: (value, record) => {
-          if (record.id === "__create__") return true; // keep create row visible
+          if (record.id === "__create__") return true;
           const d = dayjs(record.dateAdded);
           if (!value || !Array.isArray(value) || value.length !== 2)
             return true;
           const [start, end] = value;
           if (!dayjs.isDayjs(start) || !dayjs.isDayjs(end)) return true;
-          // inclusive range
           return (
             d.isSame(start, "day") ||
             d.isSame(end, "day") ||
@@ -266,7 +396,16 @@ export default function DashboardTable() {
           record.id === "__create__" ? "-" : normalizeDate(val),
       },
     ],
-    [emailSearch, dateRange, newEmail, creating]
+    [
+      nameSearch,
+      emailSearch,
+      dateRange,
+      newFirstName,
+      newLastName,
+      newEmail,
+      creating,
+      isMobile,
+    ]
   );
 
   // Inject the create row only when toggled on
@@ -283,7 +422,7 @@ export default function DashboardTable() {
         icon={<PlusOutlined />}
         onClick={() => setShowCreate((s) => !s)}
       >
-        {showCreate ? "Create Person (open)" : "Create Person"}
+        Create Person
       </Button>
 
       <Popconfirm
@@ -295,27 +434,28 @@ export default function DashboardTable() {
       >
         <Button
           danger
-          icon={<DeleteOutlined />}
           disabled={selectedRowKeys.length === 0}
           loading={deleting}
         >
-          Delete Selected ({selectedRowKeys.length})
+          <DeleteOutlined /> Delete Selected ({selectedRowKeys.length})
         </Button>
       </Popconfirm>
     </Space>
   );
 
   return (
-    <Table
-      rowKey="id"
-      rowSelection={rowSelection}
-      columns={columns}
-      dataSource={dataWithCreateRow}
-      pagination={{ pageSize: 10, showSizeChanger: true }}
-      title={() => tableTitle}
-      onChange={(_, __, ___) => {
-        // keeping this here if you later want to react to sorter/filter changes
-      }}
-    />
+    <div style={{ width: "100%" }}>
+      <Table
+        style={{ width: "100%" }} // ensure full width
+        tableLayout="auto" // allow columns to expand naturally
+        rowKey="id"
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={dataWithCreateRow}
+        pagination={{ pageSize: 10, showSizeChanger: true }}
+        title={() => tableTitle}
+        scroll={{ x: "max-content" }} // keep long content readable on small screens
+      />
+    </div>
   );
 }

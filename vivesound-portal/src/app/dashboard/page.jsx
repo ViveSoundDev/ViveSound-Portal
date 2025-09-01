@@ -9,9 +9,6 @@ export default function DashboardPage() {
   return (
     <SidebarLayout>
       <div className="dashboard">
-        <div className="header">
-          <h1>DASHBOARD</h1>
-        </div>
         <DashboardTable />
       </div>
     </SidebarLayout>
