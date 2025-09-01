@@ -1,6 +1,6 @@
 @import "./global.scss";
 
-.dashboard {
+.users-page {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10,7 +10,7 @@
 }
 
 @media screen and (max-width: $responsive) {
-  .dashboard {
+  .users-page {
     margin: 1rem 0px;
   }
 }

@@ -8,8 +8,7 @@ import {
   DashboardOutlined,
   UserOutlined,
   LogoutOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
+  TeamOutlined
 } from "@ant-design/icons";
 
 const { Sider, Content, Header } = Layout;
@@ -26,8 +25,8 @@ export default function SidebarLayout({ children }) {
 
   // Keep selection in sync with route
   const selectedKeys = useMemo(() => {
-    if (pathname === "/dashboard" || pathname?.startsWith("/dashboard"))
-      return ["/dashboard"];
+    if (pathname === "/users" || pathname?.startsWith("/users"))
+      return ["/users"];
     if (pathname?.startsWith("/my-account")) return ["/my-account"];
     if (pathname?.startsWith("/activations")) return ["/activations"];
     return [];
@@ -35,9 +34,9 @@ export default function SidebarLayout({ children }) {
 
   const items = [
     {
-      key: "/dashboard",
-      icon: <DashboardOutlined />,
-      label: <Link href="/dashboard">Dashboard</Link>,
+      key: "/users",
+      icon: <TeamOutlined />,
+      label: <Link href="/users">Users</Link>,
     },
     {
       key: "/activations",

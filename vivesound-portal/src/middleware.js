@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export function middleware(req) {
   const auth = req.cookies.get("auth_token")?.value;
 
-  const protectedPaths = ["/dashboard", "/my-account", "/activations"];
+  const protectedPaths = ["/users", "/my-account", "/activations"];
   const isProtected = protectedPaths.some((p) =>
     req.nextUrl.pathname.startsWith(p)
   );
@@ -20,5 +20,5 @@ export function middleware(req) {
 
 // Run middleware only on these routes
 export const config = {
-  matcher: ["/dashboard/:path*", "/my-account/:path*", "/activations/:path*"],
+  matcher: ["/users/:path*", "/my-account/:path*", "/activations/:path*"],
 };

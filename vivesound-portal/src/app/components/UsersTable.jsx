@@ -18,11 +18,11 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import "../styles/dashboard-page.scss";
+import "../styles/users-page.scss";
 
 const { RangePicker } = DatePicker;
 
-export default function DashboardTable() {
+export default function UsersTable() {
   const screens = useBreakpoint();
   const isMobile = !screens.sm;
 
