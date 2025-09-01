@@ -135,7 +135,7 @@ export default function LoginPage() {
             <a href="/forgot-password">Forgot password?</a>
           </Text>
           <Text type="secondary">
-            Don't have an account? <a href="/signup">Get Started</a>
+            Don&apos;t have an account? <a href="/signup">Get Started</a>
           </Text>
         </div>
       </Card>
