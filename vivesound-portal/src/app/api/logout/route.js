@@ -16,5 +16,19 @@ export async function POST() {
     path: "/",
     maxAge: 0, // delete cookie
   });
+  res.cookies.set("org_name", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0, // delete cookie
+  });
+  res.cookies.set("org_id", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0, // delete cookie
+  });
   return res;
 }

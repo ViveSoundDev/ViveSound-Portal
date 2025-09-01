@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 export async function POST() {
-  // 1. Read the token from cookies
-  const token = await cookies().get("auth_token")?.value;
-  const userEmail = await cookies().get("user_email")?.value;
-
+  // 1. Read cookies (must await the store, then .get)
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+  const userEmail = cookieStore.get("user_email")?.value;
   if (!token) {
     return NextResponse.json(
       { message: "Unauthorized: no token" },
@@ -28,6 +28,17 @@ export async function POST() {
     );
 
     const data = await upstream.json().catch(() => ({}));
+    // API Gateway often nests JSON in `body` (string). Normalize it:
+    let bodyOut = data;
+    if (typeof data?.body === "string") {
+      try {
+        bodyOut = JSON.parse(data.body);
+      } catch {
+        bodyOut = data.body;
+      }
+    } else if (data?.body && typeof data.body === "object") {
+      bodyOut = data.body;
+    }
 
     if (!upstream.ok) {
       return NextResponse.json(
@@ -36,7 +47,7 @@ export async function POST() {
       );
     }
     // 3. Return users to frontend
-    return NextResponse.json(data.body, { status: 200 });
+    return NextResponse.json(bodyOut, { status: 200 });
   } catch (err) {
     console.error("get-users error:", err);
     return NextResponse.json(

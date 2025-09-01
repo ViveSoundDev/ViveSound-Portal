@@ -44,8 +44,10 @@ export async function POST(req) {
   // If your backend returns a token on success, set it; otherwise return error
   const token = payload?.accessToken || null;
   const email = payload?.userEmail || null;
+  const orgName = payload?.orgDetails?.name || null;
+  const orgid = payload?.orgDetails?.id || null;
 
-  if (!upstream.ok || errorMessage || !token || !email) {
+  if (!upstream.ok || errorMessage || !token || !email || !orgName || !orgid) {
     // Pick best message, fall back to generic
     const msg = errorMessage || "Login failed";
     return NextResponse.json({ message: msg }, { status: 401 });
@@ -61,6 +63,20 @@ export async function POST(req) {
     maxAge: 60 * 60, // 1 hour
   });
   res.cookies.set("user_email", email, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60, // 1 hour
+  });
+  res.cookies.set("org_name", orgName, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60, // 1 hour
+  });
+  res.cookies.set("org_id", orgid, {
     httpOnly: true,
     secure: true,
     sameSite: "lax",

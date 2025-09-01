@@ -123,18 +123,27 @@ export default function UsersTable() {
 
     setCreating(true);
     try {
-      // OPTIONAL: call your create route if you have one
-      // const res = await fetch("/api/create-user", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     firstName: newFirstName.trim(),
-      //     lastName: newLastName.trim(),
-      //     email: newEmail.trim(),
-      //   }),
-      // });
-      // if (!res.ok) throw new Error((await res.json())?.message || "Create failed");
-
+      const res = await fetch("/api/create-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          firstName: newFirstName.trim(),
+          lastName: newLastName.trim(),
+          email: newEmail.trim(),
+        }),
+      });
+      const text = await res.text();
+      let json = null;
+      try {
+        json = text ? JSON.parse(text) : null;
+      } catch {}
+      if (!res.ok) {
+        throw new Error(
+          (json && json.message) ||
+            `Create failed: ${res.status} ${text?.slice(0, 180)}`
+        );
+      }
       message.success("Person created.");
       resetCreate();
       // Refresh from source of truth
@@ -471,7 +480,7 @@ export default function UsersTable() {
         icon={<PlusOutlined />}
         onClick={() => setShowCreate((s) => !s)}
       >
-        Create Person
+        Create User
       </Button>
 
       <Popconfirm
