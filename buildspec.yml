@@ -9,7 +9,7 @@ phases:
 
   build:
     commands:
-      - echo "Building Next.js app for $DEPLOY_ENV environment..."
+      - echo "Building Next.js app..."
       - npm run build
 
   post_build:
