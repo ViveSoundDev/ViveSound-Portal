@@ -9,6 +9,13 @@ export async function POST() {
     path: "/",
     maxAge: 0, // delete cookie
   });
+  res.cookies.set("user_id", "", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0, // delete cookie
+  });
   res.cookies.set("user_email", "", {
     httpOnly: true,
     secure: true,

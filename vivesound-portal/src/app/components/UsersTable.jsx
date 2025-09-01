@@ -32,6 +32,7 @@ const { RangePicker } = DatePicker;
 export default function UsersTable() {
   const screens = useBreakpoint();
   const isMobile = !screens.sm;
+  const [messageApi, contextHolder] = message.useMessage();
 
   // ----- Data -----
   const [data, setData] = useState([]);
@@ -79,7 +80,7 @@ export default function UsersTable() {
       setData(normalized);
     } catch (e) {
       console.error("fetchUsers error:", e);
-      message.error(e.message || "Could not load users.");
+      messageApi.error(e.message || "Could not load users.");
     } finally {
       setLoading(false);
     }
@@ -116,10 +117,12 @@ export default function UsersTable() {
 
   const handleCreate = async () => {
     if (!newFirstName.trim() || !newLastName.trim() || !newEmail.trim()) {
-      return message.warning("Please fill first name, last name, and email.");
+      return messageApi.warning(
+        "Please fill first name, last name, and email."
+      );
     }
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail);
-    if (!emailOk) return message.error("Invalid email format.");
+    if (!emailOk) return messageApi.error("Invalid email format.");
 
     setCreating(true);
     try {
@@ -144,13 +147,13 @@ export default function UsersTable() {
             `Create failed: ${res.status} ${text?.slice(0, 180)}`
         );
       }
-      message.success("Person created.");
+      messageApi.success("Person created.");
       resetCreate();
       // Refresh from source of truth
       await fetchUsers();
     } catch (e) {
       console.error(e);
-      message.error(e.message || "Failed to create person.");
+      messageApi.error(e.message || "Failed to create person.");
     } finally {
       setCreating(false);
     }
@@ -182,6 +185,13 @@ export default function UsersTable() {
           if (!res.ok) {
             fail++;
             console.error("delete-user failed:", json || text);
+          } else if (
+            json?.message === "Skipped deleting current user" ||
+            (typeof text === "string" &&
+              text.includes("Skipped deleting current user"))
+          ) {
+            messageApi.warning("You cannot delete your own account.");
+            continue; // don't count as success or fail
           } else {
             ok++;
           }
@@ -190,16 +200,16 @@ export default function UsersTable() {
           console.error("delete-user error:", err);
         }
       }
-      if (ok) message.success(`Deleted ${ok} user${ok > 1 ? "s" : ""}.`);
+      if (ok) messageApi.success(`Deleted ${ok} user${ok > 1 ? "s" : ""}.`);
       if (fail)
-        message.warning(
+        messageApi.warning(
           `${fail} delete${fail > 1 ? "s" : ""} failed. Check console.`
         );
       setSelectedRowKeys([]);
       await fetchUsers();
     } catch (e) {
       console.error(e);
-      message.error(e.message || "Failed to delete.");
+      messageApi.error(e.message || "Failed to delete.");
     } finally {
       setDeleting(false);
     }
@@ -531,6 +541,7 @@ export default function UsersTable() {
 
   return (
     <div style={{ width: "100%" }}>
+      {contextHolder}
       <Table
         style={{ width: "100%" }}
         tableLayout="auto"

@@ -6,6 +6,7 @@ export async function POST(req) {
   // 1. Auth from cookies
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
+  const currentUserId = cookieStore.get("user_id")?.value;
 
   if (!token) {
     return NextResponse.json(
@@ -23,6 +24,15 @@ export async function POST(req) {
       return NextResponse.json(
         { message: "Missing required field: userId" },
         { status: 400 }
+      );
+    }
+
+    // Skip if trying to delete yourself
+    if (currentUserId && userId === currentUserId) {
+      console.log("Cannot delete your organization account");
+      return NextResponse.json(
+        { message: "Skipped deleting current user" },
+        { status: 200 }
       );
     }
 
